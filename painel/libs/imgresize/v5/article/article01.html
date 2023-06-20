@@ -1,0 +1,317 @@
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=windows-1252">
+<TITLE>Image Resizing with PHP and GD library. By Yuriy Horobey. [1/4]</TITLE>
+</HEAD>
+<BODY bgcolor="#FFFFFF" LINK="#0000ff" VLINK="#800080">
+<H1>Image Resizing with PHP and GD library.</H1>
+<p>by <a href="http://horobey.com/" target="_blank">Yuriy Horobey</a> </p>
+<h2><a name="intro"></a>Introduction and History.</h2>
+<P>It all started on PHPBuidler. Browsing the Net for something interesting I 
+  have found an article &quot;<a href="http://phpbuilder.com/columns/michael20020712.php3" target="_blank">Image 
+  Resizing with PHP and Mogrify</a>&quot;. That sounded interesting and I had 
+  read the article. Hmm well Image Magic is probably very powerful and Mogrify 
+  maybe too, but why do I have to use third party software for job what PHP can 
+  do it selves? Or speaking more precisely with help of GD library which usually 
+  comes with the PHP. I am freelance web developer with over 5 years of experience 
+  so I already had to do things like that. But I had never made it in one reusable 
+  script. That was the time to do it. So I seat and wrote &quot;Image Resizer 
+  (Thumbnailer)&quot;. I uploaded it to my web site posted information to hotscripts.com 
+  phpbuilder.com and started to wait for response. Wow I never could imagine that 
+  this topic is so interesting for the public. That was nearly year ago and script 
+  was downloaded for several thousand times and I've got more than hundred emails 
+  in first few months after I published it. <br>
+  One of the letter was interesting it was from Joel Pittet. He gave me brilliant 
+  idea to make this thing OOP. I was to lazy to do it so Joel tried on his own. 
+  Unfortunately he also had no time so I have forgotten about the idea. Until 
+  last week when I had another client asking me to upload and resize some pictures. 
+  That was the time to build it. So here I want to share this code namely class 
+  which handles image resizing and output.</P>
+<h2><a name="fr" id="fr"></a>Requirements and Features.</h2>
+<h3><a name="req"></a>Requirements:</h3>
+<p>The only requirements are that your server must have PHP with GD library. If 
+  it runs under Unix/Linux like operation system GD is most probably already there. 
+  Another small requirement or better to say reminder -- you must have write permissions 
+  to the folder where you going to save resized images.</p>
+  
+<h3>  <a name="features"></a>Features: </h3>
+<ul>
+  <li>Supported image types are JPEG and PNG. Why not GIF? Well old developers 
+    know it -- GIF is copyrighted so it is no longer supported since GD 1.6. Generally 
+    this class supports all image formats which are supported by GD library.</li>
+  <li> The class creates image from file automatically calling proper ImageCreateFromXXX() 
+    function </li>
+  <li> There are three basic resize options: 
+    <ol>
+      <li>Resize to best fit into desired region</li>
+      <li>Resize to best cover desired region</li>
+      <li>Resize exactly to desired region</li>
+    </ol>
+  </li>
+  <li>You can specify only one dimension for resizing function. For example if 
+    you will give only width for desired region then you will get image with this 
+    width. The height will be resized accordingly.</li>
+  <li>You can output resized image to the file or directly to the browser</li>
+</ul>
+
+<h2><a name="description"></a>Code description.</h2>
+<h3>Creating image from file.</h3>
+<P>First of all lets define some useful class properties</P>
+<p><code><font color="#000000"> <font color="#0000BB"><br />
+  </font><font color="#007700">class&nbsp;&nbsp;</font><font color="#0000BB">hft_image 
+  </font><font color="#007700">{ <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;var ; </font><font color="#FF8000">//image resource 
+  for original image <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">var </font><font color="#0000BB">$file_original</font><font color="#007700">; 
+  </font><font color="#FF8000">//file for original image <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">var </font><font color="#0000BB">$image_original_width</font><font color="#007700">; 
+  </font><font color="#FF8000">//dimensions of the original image <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">var </font><font color="#0000BB">$image_original_height</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;var </font><font color="#0000BB">$image_original_type_code</font><font color="#007700">; 
+  </font><font color="#FF8000">//type code for the original image <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">var </font><font color="#0000BB">$image_original_type_abbr</font><font color="#007700">;</font><font color="#FF8000">//Abbreviation 
+  for the code above (JPG, PNG etc) <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">var </font><font color="#0000BB">$image_original_html_sizes</font><font color="#007700">; 
+  </font><font color="#FF8000">// same fields for resized image&nbsp;&nbsp;<br>
+  &nbsp;&nbsp;&nbsp;</font></font></code><code><font color="#FF8000"> //resized 
+  image</font></code><code><font color="#000000"><font color="#FF8000"><br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">var </font><font color="#0000BB">$image_resized</font><font color="#007700">; 
+  <br>
+  </font><font color="#FF8000"> &nbsp;&nbsp;&nbsp;//these are filled only when 
+  you save resized image to the file</font></font></code><code><font color="#000000"><font color="#007700"><br />
+  &nbsp;&nbsp;&nbsp;&nbsp;var </font><font color="#0000BB">$file_resized</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;var </font><font color="#0000BB">$image_resized_width</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;var </font><font color="#0000BB">$image_resized_height</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;var </font><font color="#0000BB">$image_resized_type_code</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;var </font><font color="#0000BB">$image_resized_type_abbr</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;var </font><font color="#0000BB">$image_resized_html_sizes</font><font color="#007700">; 
+  </font><font color="#FF8000"><br>
+  &nbsp;&nbsp;&nbsp;&nbsp;//some settings </font><font color="#FF8000"><br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">var </font><font color="#0000BB">$jpeg_quality</font><font color="#007700">; 
+  </font><font color="#007700"><br />
+  &nbsp;&nbsp;&nbsp;&nbsp;var </font><font color="#0000BB">$use_gd2</font><font color="#007700">; 
+  </font></font> <br />
+  <br>
+  </code>Now lets construct the image from the file:<code><font color="#000000"><font color="#0000BB"><br />
+  <br />
+  </font><font color="#007700">function </font><font color="#0000BB">hft_image</font><font color="#007700">(</font><font color="#0000BB">$file_original</font><font color="#007700">){ 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">//constructor of the class 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;//it takes given file and creates image out of it <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">global </font><font color="#0000BB">$ERR</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">clear</font><font color="#007700">(); 
+  </font><font color="#FF8000">// set all class properties to the start values 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">if(</font><font color="#0000BB">file_exists</font><font color="#007700">(</font><font color="#0000BB">$file_original</font><font color="#007700">)){ 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">file_original 
+  </font><font color="#007700">= </font><font color="#0000BB">$file_original</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original 
+  </font><font color="#007700">= </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">imagecreatefromfile</font><font color="#007700">(</font><font color="#0000BB">$file_original</font><font color="#007700">); 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(!</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original</font><font color="#007700">){ 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">error</font><font color="#007700">(</font><font color="#0000BB">$ERR</font><font color="#007700">[</font><font color="#DD0000">"IMAGE_NOT_CREATED_FROM_FILE"</font><font color="#007700">].</font><font color="#DD0000">" 
+  file=$file_original"</font><font color="#007700">);&nbsp;&nbsp; <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return 
+  </font><font color="#0000BB">false</font><font color="#007700">; <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;&nbsp;&nbsp; <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;} else { <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">error</font><font color="#007700">(</font><font color="#0000BB">$ERR</font><font color="#007700">[</font><font color="#DD0000">"FILE_DOESNOT_EXSIT"</font><font color="#007700">].</font><font color="#DD0000">" 
+  file=$file_original"</font><font color="#007700">); <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;} <br />
+  } </font> </font> </code><BR>
+</p>
+<p>The constructor has introduced three new things to us: array $ERR and methods 
+  clear() and ImageCreatefromFile(). The array is just associative array with 
+  error strings included in file hft_image_errors.php. Method clear() simply sets 
+  some initial values to the properties of the <br>
+  <code><font color="#000000"> <font color="#0000BB"><br />
+  </font><font color="#007700">function </font><font color="#0000BB">clear</font><font color="#007700">() 
+  { <br />
+  &nbsp;&nbsp;</font><font color="#FF8000">// clear all the class member variables<br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original</font><font color="#007700">=</font><font color="#0000BB">0</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">file_original</font><font color="#007700">=</font><font color="#DD0000">""</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_width</font><font color="#007700">=</font><font color="#0000BB">0</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_height 
+  </font><font color="#007700">=</font><font color="#0000BB">0</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_type_code</font><font color="#007700">=</font><font color="#0000BB">0</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_type_abbr</font><font color="#007700">=</font><font color="#DD0000">""</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_html_sizes 
+  </font><font color="#007700">=</font><font color="#DD0000">""</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_resized</font><font color="#007700">=</font><font color="#0000BB">0</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">file_resized</font><font color="#007700">=</font><font color="#DD0000">""</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_resized_width</font><font color="#007700">=</font><font color="#0000BB">0</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_resized_height</font><font color="#007700">=</font><font color="#0000BB">0</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_resized_type_code</font><font color="#007700">=-</font><font color="#0000BB">1</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_resized_type_abbr</font><font color="#007700">=</font><font color="#DD0000">""</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_resized_html_sizes</font><font color="#007700">=</font><font color="#DD0000">""</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">set_parameters</font><font color="#007700">(); 
+  <br />
+  } <br />
+  </font></font></code><BR>
+  Method setparameters() is needed to set just two properties – use GD2 flag and 
+  JPEG quality:<br>
+  <code><font color="#000000"> <font color="#0000BB"><br />
+  <br />
+  </font><font color="#007700">function </font><font color="#0000BB">set_parameters</font><font color="#007700">(</font><font color="#0000BB">$jpeg_quality</font><font color="#007700">=</font><font color="#DD0000">"85"</font><font color="#007700">, 
+  </font><font color="#0000BB">$use_gd2</font><font color="#007700">=</font><font color="#0000BB">true</font><font color="#007700">) 
+  { <br />
+  &nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">jpeg_quality</font><font color="#007700">=</font><font color="#0000BB">$jpeg_quality</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">use_gd2</font><font color="#007700">=</font><font color="#0000BB">$use_gd2</font><font color="#007700">; 
+  <br />
+  &nbsp;} <br />
+  </font></font></code><BR>
+  Much more interesting is method ImageCreateFromFile(). Main purpose of this 
+  method is to create image resource basing on image type. <br>
+  <code><font color="#000000"> <font color="#0000BB"><br />
+  </font><font color="#007700">function </font><font color="#0000BB">imagecreatefromfile</font><font color="#007700">(</font><font color="#0000BB">$img_file</font><font color="#007700">){ 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;global </font><font color="#0000BB">$ERR</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$img</font><font color="#007700">=</font><font color="#0000BB">0</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$img_sz </font><font color="#007700">= 
+  </font><font color="#0000BB">getimagesize</font><font color="#007700">( </font><font color="#0000BB">$img_file 
+  </font><font color="#007700">); </font><font color="#FF8000">// returns array 
+  with some <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">properties like dimensions 
+  </font><font color="#007700">and </font><font color="#0000BB">type</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// Now create original 
+  image from uploaded file. Be careful! <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">GIF is often not supported</font><font color="#007700">, 
+  as </font><font color="#0000BB">far </font><font color="#007700">as </font><font color="#0000BB">I 
+  remember from GD 1.6 <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">switch( </font><font color="#0000BB">$img_sz</font><font color="#007700">[</font><font color="#0000BB">2</font><font color="#007700">] 
+  ){ <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case </font><font color="#0000BB">1</font><font color="#007700">: 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$img 
+  </font><font color="#007700">= </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">_imagecheckandcreate</font><font color="#007700">(</font><font color="#DD0000">"ImageCreateFromGif"</font><font color="#007700">, 
+  </font><font color="#0000BB">$img_file</font><font color="#007700">); <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$img_type 
+  </font><font color="#007700">= </font><font color="#DD0000">"GIF"</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case </font><font color="#0000BB">2</font><font color="#007700">: 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$img 
+  </font><font color="#007700">= </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">_imagecheckandcreate</font><font color="#007700">(</font><font color="#DD0000">"ImageCreateFromJpeg"</font><font color="#007700">, 
+  </font><font color="#0000BB">$img_file</font><font color="#007700">); <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$img_type 
+  </font><font color="#007700">= </font><font color="#DD0000">"JPG"</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case </font><font color="#0000BB">3</font><font color="#007700">: 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$img 
+  </font><font color="#007700">= </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">_imagecheckandcreate</font><font color="#007700">(</font><font color="#DD0000">"ImageCreateFromPng"</font><font color="#007700">, 
+  </font><font color="#0000BB">$img_file</font><font color="#007700">); <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$img_type 
+  </font><font color="#007700">= </font><font color="#DD0000">"PNG"</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// 
+  would be nice if this function will be finally supported <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">case 
+  </font><font color="#0000BB">4</font><font color="#007700">: <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$img 
+  </font><font color="#007700">= </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">_imagecheckandcreate</font><font color="#007700">(</font><font color="#DD0000">"ImageCreateFromSwf"</font><font color="#007700">, 
+  </font><font color="#0000BB">$img_file</font><font color="#007700">); <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$img_type 
+  </font><font color="#007700">= </font><font color="#DD0000">"SWF"</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default: <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$img 
+  </font><font color="#007700">= </font><font color="#0000BB">0</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$img_type 
+  </font><font color="#007700">= </font><font color="#DD0000">"UNKNOWN"</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">error</font><font color="#007700">(</font><font color="#0000BB">$ERR</font><font color="#007700">[</font><font color="#DD0000">"IMG_NOT_SUPPORTED"</font><font color="#007700">].</font><font color="#DD0000">" 
+  $img_file"</font><font color="#007700">); <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;}</font><font color="#FF8000">//switch <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">if(</font><font color="#0000BB">$img</font><font color="#007700">){ 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_width</font><font color="#007700">=</font><font color="#0000BB">$img_sz</font><font color="#007700">[</font><font color="#0000BB">0</font><font color="#007700">]; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_height</font><font color="#007700">=</font><font color="#0000BB">$img_sz</font><font color="#007700">[</font><font color="#0000BB">1</font><font color="#007700">]; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_type_code</font><font color="#007700">=</font><font color="#0000BB">$img_sz</font><font color="#007700">[</font><font color="#0000BB">2</font><font color="#007700">]; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_type_abbr</font><font color="#007700">=</font><font color="#0000BB">$img_type</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_html_sizes</font><font color="#007700">=</font><font color="#0000BB">$img_sz</font><font color="#007700">[</font><font color="#0000BB">3</font><font color="#007700">]; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;}else { <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">clear</font><font color="#007700">(); 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;} <br />
+  &nbsp;&nbsp;&nbsp;&nbsp; <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;return </font><font color="#0000BB">$img</font><font color="#007700">; 
+  <br />
+  } <br />
+  </font></font></code><BR>
+  Basically image is created in method _imagecheckandcreate(); which takes two 
+  parameters -- name of GD function ImagegeCreateFromXXX and filename of the image. 
+  this method checks if the function exists and if yes calls it: <code><font color="#000000"> 
+  <font color="#0000BB"><br>
+  <br />
+  </font><font color="#007700">function </font><font color="#0000BB">_imagecheckandcreate</font><font color="#007700">(</font><font color="#0000BB">$function</font><font color="#007700">, 
+  </font><font color="#0000BB">$img_file</font><font color="#007700">) { <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">//inner function used from 
+  imagecreatefromfile(). <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;//Checks if the function exists and returns <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;//created image or false <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">global </font><font color="#0000BB">$ERR</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;if(</font><font color="#0000BB">function_exists</font><font color="#007700">(</font><font color="#0000BB">$function</font><font color="#007700">)) 
+  { <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$img 
+  </font><font color="#007700">= </font><font color="#0000BB">$function</font><font color="#007700">(</font><font color="#0000BB">$img_file</font><font color="#007700">); 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;}else{ <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$img 
+  </font><font color="#007700">= </font><font color="#0000BB">false</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">error</font><font color="#007700">(</font><font color="#0000BB">$ERR</font><font color="#007700">[</font><font color="#DD0000">"FUNCTION_DOESNOT_EXIST"</font><font color="#007700">].</font><font color="#DD0000">" 
+  "</font><font color="#007700">.</font><font color="#0000BB">$function</font><font color="#007700">); 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;} <br />
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;return </font><font color="#0000BB">$img</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp; <br />
+  } <br />
+  </font></font></code> </p>
+  [ <strong>1</strong> ] [ <a href="article02.html">2</a> ] [ <a href="article03.html">3</a> 
+] [ <a href="article04.html">4</a> ] 
+</BODY>
+</HTML>

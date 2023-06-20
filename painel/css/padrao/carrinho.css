@@ -1,0 +1,275 @@
+body {
+  background:#FFF;
+}
+
+#geral_carrinho {
+  text-align:left;
+  margin:10px;
+}
+
+h3 {
+  margin:5px;
+  padding:5px;
+  font-family:Verdana, Arial, Tahoma, sans-serif;
+  color:#4F4F4F;
+  border-bottom:1px solid #4F4F4F;
+  text-align:left;
+}
+
+h4 {
+  margin:2px 0px;
+  padding:0px;
+  font-family:Verdana, Arial, Tahoma, sans-serif;
+  color:#CC2223;
+  text-align:left;
+}
+.tit_destaque {
+  text-decoration:underline;
+}
+#mp_le {
+  width:40%;
+  float:left;
+  margin:0px 10px;
+}
+#mp_ld {
+  width:40%;
+  float:right;
+  margin:0px 10px;
+}
+
+#carrinho {
+margin:10px 5px;
+}
+
+#tr_carrinho_cabeca {
+color:#4F4F4F;
+font-weight:bold;
+font-size:14px;
+}
+
+.tr_carrinho_linha1 {
+background:#FFFFFF;
+color:#000000;
+font-size:12px;
+}
+
+.tr_carrinho_linha2 {
+background: #F4F4F4;
+color:#000000;
+font-size:12px;
+}
+
+
+#tr_carrinho_total {
+background:#E0E9EF;
+color:#000;
+font-size:13px;
+}
+
+#tr_carrinho_bts {
+background:#104272;
+height:46px;
+}
+
+
+#cartoescarrinho {
+float:right;
+}
+
+td.tdcc {
+padding:10px;
+background:url(/painel/img/bgcc.jpg) no-repeat left center #F2F2F2;
+}
+
+
+.inp_qtd_carrinho {
+text-align:center;
+}
+
+td.td_bts {
+padding:4px 10px 0 15px;
+text-align:center;
+}
+
+td.td_frete {
+padding:9px;
+}
+
+td.td_descr_top {
+height:32px;
+background:#CFCFCF;
+padding:0 9px;
+border-right:1px dashed #FFFFFF;
+}
+
+td.td_qtde_top {
+height:32px;
+background:#CFCFCF;
+text-align:center;
+padding:0 9px;
+border-right:1px dashed #FFFFFF;
+}
+
+td.td_remover_top {
+height:32px;
+background:#CFCFCF;
+text-align:center;
+padding:0 9px;
+border-right:1px dashed #FFFFFF;
+}
+
+td.td_pu_top {
+height:32px;
+background:#CFCFCF;
+padding:0 9px;
+border-right:1px dashed #FFFFFF;
+text-align:center;
+}
+
+td.td_pt_top {
+height:32px;
+background:#CFCFCF;
+padding:0 9px;
+text-align:center;
+}
+
+td.td_descr {
+padding:9px;
+}
+
+td.td_qtde {
+padding:9px;
+text-align:center;
+}
+
+td.td_remover {
+padding:9px;
+text-align:center;
+}
+
+td.td_pu {
+padding:9px;
+text-align:center;
+}
+
+td.td_pt {
+padding:9px;
+text-align:center;
+}
+
+a.btn {
+    display:block;
+    float:left;
+    margin:0 7px 0 0;
+    background-color:#f5f5f5;
+    border:1px solid #dedede;
+    border-top:1px solid #eee;
+    border-left:1px solid #eee;
+
+    font-family:"Lucida Grande", Tahoma, Arial, Verdana, sans-serif;
+    font-size:100%;
+    line-height:130%;
+    text-decoration:none;
+    font-weight:bold;
+    color:#565656;
+    cursor:pointer;
+    padding:5px 10px 6px 7px; /* Links */
+}
+
+img.btn_img {
+    margin:0 3px -3px 0 !important;
+    padding:0;
+    border:none;
+    width:16px;
+    height:16px;
+}
+
+
+a.btn_g {
+    display:block;
+    float:left;
+    margin:0;
+    background-color:#CFCFCF;
+    border:1px solid #dedede;
+    border-top:1px solid #eee;
+    border-left:1px solid #eee;
+
+    font-family:"Lucida Grande", Tahoma, Arial, Verdana, sans-serif;
+    font-size:150%;
+    line-height:130%;
+    text-decoration:none;
+    font-weight:bold;
+    color:#565656;
+    cursor:pointer;
+    padding:14px 20px 15px 14px; /* Links */
+}
+
+a.btn_g:hover {
+    display:block;
+    float:left;
+    margin:0;
+    background-color:#D4D4D4;
+    border:1px solid #dedede;
+    border-top:1px solid #eee;
+    border-left:1px solid #eee;
+
+    font-family:"Lucida Grande", Tahoma, Arial, Verdana, sans-serif;
+    font-size:150%;
+    line-height:130%;
+    text-decoration:none;
+    font-weight:bold;
+    color:#565656;
+    cursor:pointer;
+    padding:14px 20px 15px 14px; /* Links */
+}
+
+img.btn_img_g {
+    margin:0 -3px -3px 5px !important;
+    padding:0;
+    border:none;
+    width:16px;
+    height:16px;
+}
+
+#carrinho_vazio {
+margin:10px;
+}
+
+#main_frm_confirma {
+  width:600px;
+}
+.frm_30 {
+  margin:10px;
+}
+
+.prod_confirma_le {
+  width:150px;
+  float:left;
+  text-align:right;
+  padding-right:5px;
+}
+
+.prod_confirma_ld {
+  width:350px;
+  float:left;
+  padding-left:5px;
+  font-weight:bold;
+}
+
+.max_itens {
+  font-weight:normal;
+  color:#777;
+}
+
+#explica_formas_pg {
+  margin:5px;
+}
+#explica_formas_pg p {
+  margin:5px 5px 20px 5px;
+}
+#explica_formas_pg h4 {
+  margin:5px;
+}
+
+
+

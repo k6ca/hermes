@@ -1,0 +1,328 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Image Resizing with PHP and GD library. By Yuriy Horobey. [2/4]</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</head>
+
+<body><a name="resizing"></a>
+<h3>Resizing</h3>
+<p> And now the moment we've been waiting for: Resizing :)<br>
+  There are several resize modes. The simplest mode is to resize to fit desired 
+  region exactly.<br>
+  In this mode most likely that you will get geometrical distortions. Imagine 
+  that you have image with dimensions 400x300 and circle shown on it. Now you 
+  want to resize it to 80x80 -- you will get vertical ellipse.<br>
+  Better way is to resize preserving X to Y ratio. In this case no geometrical 
+  distortion will occur but we now have to calculate new width and height of the 
+  resized image. <br>
+  Again we have two options
+<ol>
+  <li>Resized image will fit to the given region</li>
+  <li>Resized image will cover given region</li>
+</ol>
+
+  
+<p><img src="resize_modes.gif"><br>
+  Sometimes also I am required to resize only by height or by width and X to Y 
+  ratio must be kept, so all resized images are same height or same width for 
+  design purposes. Well all these options are implemented in method Resize(). 
+  It takes three parameters: desired width and height and resize mode. If any 
+  of the size parameters is set to "*" then the function will not care about this 
+  dimension when resizing.<br>
+  The "mode" parameter can take three values:
+<ol>
+  <li>"-" - Fit mode</li>
+  <li> "+" - Cover mode</li>
+  <li> "0" - Exact mode<br>
+  </li>
+</ol>
+  
+<code><font color="#000000"> <font color="#0000BB"> </font><font color="#007700">function 
+</font><font color="#0000BB">resize</font><font color="#007700">(</font><font color="#0000BB">$desired_width</font><font color="#007700">, 
+</font><font color="#0000BB">$desired_height</font><font color="#007700">, </font><font color="#0000BB">$mode</font><font color="#007700">=</font><font color="#DD0000">"-"</font><font color="#007700">){ 
+<br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">//this is core function--it 
+  resizes created image <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;//if any of dimensions == "*" then no resizing on this 
+  dimension <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;//&gt;&gt; mode = "+" then image is resized to cover 
+  the region specified by desired_width, _height <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;//&gt;&gt; mode = "-" then image is resized to fit into 
+  the region specified by desired_width, _height <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;// width-to-height ratio is all the time the same <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;//&gt;&gt;mode=0 then image will be exactly resized 
+  to $desired_width _height. <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;//geometrical distortion can occur in this case. <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;// say u have picture 400x300 and there is circle on 
+  the picture <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;//now u resized in mode=0 to 800x300 -- circle shape 
+  will be distorted and will look like ellipse. <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;//GD2 provides much better quality but is not everywhere 
+  installed <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">global </font><font color="#0000BB">$ERR</font><font color="#007700">; 
+  <br />
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;if(</font><font color="#0000BB">$desired_width </font><font color="#007700">== 
+  </font><font color="#DD0000">"*" </font><font color="#007700">&amp;&amp; </font><font color="#0000BB">$desired_height 
+  </font><font color="#007700">== </font><font color="#DD0000">"*"</font><font color="#007700">){ 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">//This 
+  is stupid to specify that we don't care about both dimensions <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//That just means that no resizing 
+  should occur at all <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_resized 
+  </font><font color="#007700">= </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Return </font><font color="#0000BB">true</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;} <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;switch(</font><font color="#0000BB">$mode</font><font color="#007700">) 
+  { <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case </font><font color="#DD0000">"-"</font><font color="#007700">: 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case </font><font color="#DD0000">'+'</font><font color="#007700">: 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">//multipliers 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">if(</font><font color="#0000BB">$desired_width 
+  </font><font color="#007700">!= </font><font color="#DD0000">"*"</font><font color="#007700">) 
+  </font><font color="#0000BB">$mult_x </font><font color="#007700">= </font><font color="#0000BB">$desired_width 
+  </font><font color="#007700">/ </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_width</font><font color="#007700">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(</font><font color="#0000BB">$desired_height 
+  </font><font color="#007700">!= </font><font color="#DD0000">"*"</font><font color="#007700">) 
+  </font><font color="#0000BB">$mult_y </font><font color="#007700">= </font><font color="#0000BB">$desired_height 
+  </font><font color="#007700">/ </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_height</font><font color="#007700">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$ratio 
+  </font><font color="#007700">= </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_width 
+  </font><font color="#007700">/ </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_height</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">//here 
+  we handle case when we don't care about resizing <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//on 
+  one of the dimensions <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">if(</font><font color="#0000BB">$desired_width 
+  </font><font color="#007700">== </font><font color="#DD0000">"*"</font><font color="#007700">){ 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$new_height 
+  </font><font color="#007700">= </font><font color="#0000BB">$desired_height</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$new_width 
+  </font><font color="#007700">= </font><font color="#0000BB">$ratio </font><font color="#007700">* 
+  </font><font color="#0000BB">$desired_height</font><font color="#007700">; <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}elseif(</font><font color="#0000BB">$desired_height 
+  </font><font color="#007700">== </font><font color="#DD0000">"*"</font><font color="#007700">){ 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$new_height 
+  </font><font color="#007700">= </font><font color="#0000BB">$desired_width </font><font color="#007700">/ 
+  </font><font color="#0000BB">$ratio</font><font color="#007700">; <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$new_width 
+  </font><font color="#007700">=&nbsp;&nbsp;</font><font color="#0000BB">$desired_width</font><font color="#007700">; 
+  <br />
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}else{ 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">//if 
+  we are here that means that both dimensions are specified and we have <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//to 
+  calculate $new_width $new_height according to the resize mode: <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">if(</font><font color="#0000BB">$mode</font><font color="#007700">==</font><font color="#DD0000">"-"</font><font color="#007700">){ 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">//image 
+  must be smaller than given $desired_ region <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//test 
+  which multiplier gives us best result <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">if( 
+  </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_height 
+  </font><font color="#007700">* </font><font color="#0000BB">$mult_x </font><font color="#007700">&lt; 
+  </font><font color="#0000BB">$desired_height </font><font color="#007700">){ 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">//$mult_x 
+  does the job <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$new_width 
+  </font><font color="#007700">= </font><font color="#0000BB">$desired_width</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$new_height 
+  </font><font color="#007700">= </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_height 
+  </font><font color="#007700">* </font><font color="#0000BB">$mult_x</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}else{ 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">//$mult_y 
+  does the job <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$new_width 
+  </font><font color="#007700">= </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_width 
+  </font><font color="#007700">* </font><font color="#0000BB">$mult_y</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$new_height 
+  </font><font color="#007700">= </font><font color="#0000BB">$desired_height</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+  <br />
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}else{ 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">//mode 
+  == "+" <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// 
+  cover the region <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//image 
+  must be bigger than given $desired_ region <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//test 
+  which multiplier gives us best result <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">if( 
+  </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_height 
+  </font><font color="#007700">* </font><font color="#0000BB">$mult_x </font><font color="#007700">&gt; 
+  </font><font color="#0000BB">$desired_height </font><font color="#007700">){ 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">//$mult_x 
+  does the job <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$new_width 
+  </font><font color="#007700">= </font><font color="#0000BB">$desired_width</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$new_height 
+  </font><font color="#007700">= </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_height 
+  </font><font color="#007700">* </font><font color="#0000BB">$mult_x</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}else{ 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">//$mult_y 
+  does the job <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$new_width 
+  </font><font color="#007700">= </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_width 
+  </font><font color="#007700">* </font><font color="#0000BB">$mult_y</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$new_height 
+  </font><font color="#007700">= </font><font color="#0000BB">$desired_height</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+  <br />
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; <br />
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case </font><font color="#DD0000">'0'</font><font color="#007700">: 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">//fit 
+  the region exactly. <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//The 
+  easiest resize mode -- no Math is required :) <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">if(</font><font color="#0000BB">$desired_width 
+  </font><font color="#007700">== </font><font color="#DD0000">"*"</font><font color="#007700">) 
+  </font><font color="#0000BB">$desired_width </font><font color="#007700">= </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_width</font><font color="#007700">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(</font><font color="#0000BB">$desired_height 
+  </font><font color="#007700">== </font><font color="#DD0000">"*"</font><font color="#007700">) 
+  </font><font color="#0000BB">$desired_height </font><font color="#007700">= 
+  </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_height</font><font color="#007700">;&nbsp;&nbsp;&nbsp;&nbsp; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$new_width 
+  </font><font color="#007700">= </font><font color="#0000BB">$desired_width</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$new_height 
+  </font><font color="#007700">= </font><font color="#0000BB">$desired_height</font><font color="#007700">; 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default: <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">error</font><font color="#007700">(</font><font color="#0000BB">$ERR</font><font color="#007700">[</font><font color="#DD0000">"UNKNOWN_RESIZE_MODE"</font><font color="#007700">].</font><font color="#DD0000">"&nbsp;&nbsp;$mode"</font><font color="#007700">); 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;} <br />
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">// OK here we have $new_width 
+  $new_height <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;//lets create destination image checking for GD2 functions: 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">if( </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">use_gd2 
+  </font><font color="#007700">){ <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if( </font><font color="#0000BB">function_exists</font><font color="#007700">(</font><font color="#DD0000">"imagecreatetruecolor"</font><font color="#007700">)){ 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_resized 
+  </font><font color="#007700">= </font><font color="#0000BB">imagecreatetruecolor</font><font color="#007700">(</font><font color="#0000BB">$new_width</font><font color="#007700">, 
+  </font><font color="#0000BB">$new_height</font><font color="#007700">) or </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">error</font><font color="#007700">(</font><font color="#0000BB">$ERR</font><font color="#007700">[</font><font color="#DD0000">"GD2_NOT_CREATED"</font><font color="#007700">]); 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}else { <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">error</font><font color="#007700">(</font><font color="#0000BB">$ERR</font><font color="#007700">[</font><font color="#DD0000">"GD2_UNAVALABLE"</font><font color="#007700">].</font><font color="#DD0000">" 
+  ImageCreateTruecolor()"</font><font color="#007700">); <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;} else { <br />
+  <br />
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_resized 
+  </font><font color="#007700">= </font><font color="#0000BB">imagecreate</font><font color="#007700">(</font><font color="#0000BB">$new_width</font><font color="#007700">, 
+  </font><font color="#0000BB">$new_height</font><font color="#007700">) or </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">error</font><font color="#007700">(</font><font color="#0000BB">$ERR</font><font color="#007700">[</font><font color="#DD0000">"IMG_NOT_CREATED"</font><font color="#007700">]); 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;} <br />
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">//Resize <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">if( </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">use_gd2 
+  </font><font color="#007700">){ <br />
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if( </font><font color="#0000BB">function_exists</font><font color="#007700">(</font><font color="#DD0000">"imagecopyresampled"</font><font color="#007700">)){ 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$res 
+  </font><font color="#007700">= </font><font color="#0000BB">imagecopyresampled</font><font color="#007700">(</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_resized</font><font color="#007700">, 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original</font><font color="#007700">, 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">0</font><font color="#007700">, 
+  </font><font color="#0000BB">0</font><font color="#007700">,&nbsp;&nbsp;</font><font color="#FF8000">//dest 
+  coord <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">0</font><font color="#007700">, 
+  </font><font color="#0000BB">0</font><font color="#007700">,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">//source 
+  coord <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$new_width</font><font color="#007700">, 
+  </font><font color="#0000BB">$new_height</font><font color="#007700">, </font><font color="#FF8000">//dest 
+  sizes <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_width</font><font color="#007700">, 
+  </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_height 
+  </font><font color="#FF8000">// src sizes <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">) 
+  or </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">error</font><font color="#007700">(</font><font color="#0000BB">$ERR</font><font color="#007700">[</font><font color="#DD0000">"GD2_NOT_RESIZED"</font><font color="#007700">]); 
+  <br />
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}else { <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">error</font><font color="#007700">(</font><font color="#0000BB">$ERR</font><font color="#007700">[</font><font color="#DD0000">"GD2_UNAVALABLE"</font><font color="#007700">].</font><font color="#DD0000">" 
+  ImageCopyResampled()"</font><font color="#007700">); <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;} else { <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">//hmmm... 
+  GD2 is not available or ImageCopyResampled() is disabled <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//I had such a problem in my 
+  practice <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//So lets use old function ImageCopyResized() 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$res 
+  </font><font color="#007700">= </font><font color="#0000BB">imagecopyresized</font><font color="#007700">(</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_resized</font><font color="#007700">, 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original</font><font color="#007700">, 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">0</font><font color="#007700">, 
+  </font><font color="#0000BB">0</font><font color="#007700">,&nbsp;&nbsp;</font><font color="#FF8000">//dest 
+  coord <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">0</font><font color="#007700">, 
+  </font><font color="#0000BB">0</font><font color="#007700">,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#FF8000">//source 
+  coord <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$new_width</font><font color="#007700">, 
+  </font><font color="#0000BB">$new_height</font><font color="#007700">, </font><font color="#FF8000">//dest 
+  sizes <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_width</font><font color="#007700">, 
+  </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">image_original_height 
+  </font><font color="#FF8000">// src sizes <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#007700">) 
+  or </font><font color="#0000BB">$this</font><font color="#007700">-&gt;</font><font color="#0000BB">error</font><font color="#007700">(</font><font color="#0000BB">$ERR</font><font color="#007700">[</font><font color="#DD0000">"IMG_NOT_RESIZED"</font><font color="#007700">]); 
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;} <br />
+  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;} <br />
+  </font><font color="#0000BB">?&gt;</font> </font> </code> <br></p>
+[ <a href="article01.html">1</a> ] [ <strong>2</strong> ] [ <a href="article03.html">3</a> 
+] [ <a href="article04.html">4</a> ]
+</body>
+</html>
