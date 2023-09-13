@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "../k6ca"
+		},
+		{
+			"name": "hermes",
+			"path": "."
+		},
+		{
+			"name": "Courses",
+			"path": "../Courses"
+		}
+	],
+	"settings": {}
+}

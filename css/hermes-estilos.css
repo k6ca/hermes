@@ -81,7 +81,7 @@ body {
     width: 176px;
     height: 52px;
     margin: 38px 0 0 731px;
-    background: url(../img/lay/end-top.png) no-repeat;
+    background: url(../img/lay/end-top2.png) no-repeat; /*alterado arquivo de end-top.png*/
 }
 
 .nav1 {
@@ -486,7 +486,7 @@ body {
     position: absolute;
     width: 120px;
     height: 22px;
-    font-size: 16px;
+    font-size: 11px;
     letter-spacing: -0.3px;
     font-weight: 700;
     color: #666;
